@@ -1,0 +1,7 @@
+[submodule "client"]
+    path = frontend
+    url =   https://github.com/pragun-bansal/ecommerce-front-end.git
+
+[submodule "server"]
+    path = server
+    url = https://github.com/pragun-bansal/ecommerce-back-end.git
