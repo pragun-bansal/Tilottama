@@ -1,7 +1,7 @@
-[submodule "backend"]
-    path = frontend
+[submodule "client"]
+    path = front-end
     url =   https://github.com/pragun-bansal/ecommerce-front-end.git
 
-[submodule "frontend"]
-    path = backend
+[submodule "server"]
+    path = back-end
     url = https://github.com/pragun-bansal/ecommerce-back-end.git
