@@ -3,5 +3,5 @@
     url =   https://github.com/pragun-bansal/ecommerce-front-end.git
 
 [submodule "server"]
-    path = server
+    path = backend
     url = https://github.com/pragun-bansal/ecommerce-back-end.git
