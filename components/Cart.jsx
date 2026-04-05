@@ -104,7 +104,37 @@ const Cart = ({ show, setShow }) => {
     // Handle checkout navigation
     const handleCheckout = () => {
         setShow(false);
-        router.push('/checkout');
+
+        const offer = subtotal >= 3000
+            ? "You got free shipping!"
+            : `Add ₹${(3000 - subtotal).toLocaleString()} more for free shipping.`;
+        const front_url = process.env.FRONT_END_URL || "http://localhost:3000";
+
+        const items = cartState.items.map((product, idx) => {
+            const productData = product.productId || product;
+            const productName = productData?.name || "Product";
+            const productQty = product.qty;
+            const productPrice = productData?.price || 0;
+            const productId = productData?._id;
+            const productUrl = `${front_url}/product/${productId}`;
+            return `${idx + 1}. ${productName} x${productQty} - ₹${(productPrice * productQty).toLocaleString()}\n${productUrl}`;
+        }).join('\n\n');
+
+        const message =
+            `🛒 *Order Details*
+${items}
+
+Subtotal: ₹${subtotal.toLocaleString()}
+Shipping: ₹${shipping}
+Tax (18%): ₹${tax.toLocaleString()}
+Total: ₹${total.toLocaleString()}
+
+${offer}
+`;
+
+        const phone = "919811144328";
+        const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+        window.open(url, "_blank");
     };
 
     // Calculate totals
