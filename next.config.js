@@ -197,19 +197,20 @@ const nextConfig = {
         // memoryBasedWorkers removed as it's deprecated
     },
 
-    // Webpack configuration
-    webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-        // Fix for potential module resolution issues
-        config.resolve.fallback = {
-            ...config.resolve.fallback,
-            fs: false,
-            net: false,
-            tls: false,
-            crypto: false,
-        };
+    // Webpack configuration (removed for Turbopack compatibility)
+    // webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+    //     config.resolve.fallback = {
+    //         ...config.resolve.fallback,
+    //         fs: false,
+    //         net: false,
+    //         tls: false,
+    //         crypto: false,
+    //     };
+    //     return config;
+    // },
 
-        return config;
-    },
+    // Turbopack configuration (Next.js 16+)
+    turbopack: {},
 
     // Environment variables
     env: {
