@@ -126,7 +126,6 @@ ${items}
 
 Subtotal: ₹${subtotal.toLocaleString()}
 Shipping: ₹${shipping}
-Tax (18%): ₹${tax.toLocaleString()}
 Total: ₹${total.toLocaleString()}
 
 ${offer}
@@ -140,8 +139,8 @@ ${offer}
     // Calculate totals
     const subtotal = cartState.totalCost || 0;
     const shipping = subtotal < 3000 ? 120 : 0;
-    const tax = Math.round(subtotal * 0.18);
-    const total = subtotal + shipping + tax;
+    // const tax = Math.round(subtotal * 0.18);
+    const total = subtotal + shipping ;
 
     return (
         <>
@@ -323,10 +322,10 @@ ${offer}
                                                 </div>
 
                                                 {/* Tax */}
-                                                <div className="flex items-center justify-between pt-5">
-                                                    <p className="text-base leading-none text-gray-800">Tax (18%)</p>
-                                                    <p className="text-base leading-none text-gray-800">₹{tax.toLocaleString()}</p>
-                                                </div>
+                                                {/*<div className="flex items-center justify-between pt-5">*/}
+                                                {/*    <p className="text-base leading-none text-gray-800">Tax (18%)</p>*/}
+                                                {/*    <p className="text-base leading-none text-gray-800">₹{tax.toLocaleString()}</p>*/}
+                                                {/*</div>*/}
 
                                                 {/* Free shipping notice */}
                                                 {subtotal < 3000 && (
