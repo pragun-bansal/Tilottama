@@ -7,7 +7,7 @@ import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // Import carousel styles
 
 import {  useAuth, useCartOperations, useWishlistOperations } from '@/hooks/redux';
-import { addItemToCart, updateCartItemQuantity, removeFromCart } from '@/store/slices/cartSlice';
+import { addToCart, updateCartItemQuantity, removeFromCart } from '@/store/slices/cartSlice';
 import { addToWishlist, removeFromWishlist } from '@/store/slices/wishlistSlice';
 import { toast } from 'react-toastify';
 import { CareGuide, ReturnPolicy, Terms } from '@/components/product/InfoJSON';
@@ -79,7 +79,7 @@ const ProductDescription = ({ product }) => {
                 });
             } else {
                 // If item is not in cart, add it with quantity 1
-                await dispatch(addItemToCart({
+                await dispatch(addToCart({
                     productId: product._id,
                     qty: 1
                 })).unwrap();
