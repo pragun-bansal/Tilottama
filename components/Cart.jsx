@@ -108,7 +108,7 @@ const Cart = ({ show, setShow }) => {
         const offer = subtotal >= 3000
             ? "You got free shipping!"
             : `Add ₹${(3000 - subtotal).toLocaleString()} more for free shipping.`;
-        const front_url = process.env.FRONT_END_URL || "http://localhost:3000";
+        const front_url = process.env.NEXT_PUBLIC_FRONT_END_URL;
 
         const items = cartState.items.map((product, idx) => {
             const productData = product.productId || product;
