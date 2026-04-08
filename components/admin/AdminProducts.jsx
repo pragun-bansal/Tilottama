@@ -1888,7 +1888,7 @@ const AdminProducts = ({ onAddProduct, onEditProduct }) => {
             onAddProduct();
         } else {
             // Fallback navigation
-            window.location.href = '/admin/products/new';
+            window.location.href = '/admin/newproduct';
         }
     };
 

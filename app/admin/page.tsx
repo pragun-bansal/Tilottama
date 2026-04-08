@@ -194,7 +194,7 @@ const AdminPage = () => {
     // Handle navigation to specific product pages
     const handleAddProduct = () => {
         // Adjust this path based on your routing structure
-        router.push('/admin/products/new');
+        router.push('/admin/newproduct');
     };
 
     const handleEditProduct = (productId: string) => {
