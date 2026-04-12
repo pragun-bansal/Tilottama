@@ -144,6 +144,37 @@ function convertWebRequestToNodeRequest(req) {
     });
 }
 
+export async function GET(request, { params }) {
+    try {
+        await connectMongoDB();
+
+        const { productId } = await params;
+
+        const product = await Product.findOne({ _id: productId }).populate({
+            path: "reviews",
+            populate: { path: "user" },
+        });
+
+        if (!product) {
+            return NextResponse.json({
+                message: "No Product found",
+                data: {}
+            }, { status: 204 });
+        }
+
+        return NextResponse.json({
+            message: "Product Found Successfully",
+            data: product
+        });
+    } catch (err) {
+        console.log(err);
+        return NextResponse.json({
+            message: "Product can't be fetched",
+            error: err.message
+        }, { status: 404 });
+    }
+}
+
 // ---------------- PUT ----------------
 export async function PUT(request, { params }) {
     try {
@@ -230,5 +261,30 @@ export async function PUT(request, { params }) {
     } catch (error) {
         console.error(error);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    }
+}
+
+export async function DELETE(request, { params }) {
+    try {
+        await connectMongoDB();
+        const { productId } = await params;
+        const deleted = await Product.findByIdAndDelete(productId);
+        if (!deleted) {
+            return NextResponse.json({
+                success: false,
+                message: "Product not found"
+            }, { status: 404 });
+        }
+        return NextResponse.json({
+            success: true,
+            message: "Product deleted successfully",
+            data: deleted
+        });
+    } catch (error) {
+        console.error("Error deleting product:", error);
+        return NextResponse.json({
+            success: false,
+            message: "Internal server error"
+        }, { status: 500 });
     }
 }
