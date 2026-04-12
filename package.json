@@ -21,6 +21,7 @@
     "clsx": "^2.1.1",
     "cookie-session": "^2.1.0",
     "cors": "^2.8.5",
+    "formidable": "^3.5.4",
     "framer-motion": "^12.19.1",
     "immer": "^10.1.1",
     "is-empty": "^1.2.0",
