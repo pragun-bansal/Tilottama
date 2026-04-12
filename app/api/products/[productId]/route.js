@@ -39,7 +39,7 @@ export async function PUT(request, { params }) {
     try {
         await connectMongoDB();
 
-        const { productId } = params;
+        const { productId } = await params;
         const formData = await request.formData();
         const images = formData.getAll('all_images');
 
@@ -80,6 +80,31 @@ export async function PUT(request, { params }) {
     } catch (error) {
         console.error("Error editing product:", error);
         return NextResponse.json({
+            message: "Internal server error"
+        }, { status: 500 });
+    }
+}
+
+export async function DELETE(request, { params }) {
+    try {
+        await connectMongoDB();
+        const { productId } = await params;
+        const deleted = await Product.findByIdAndDelete(productId);
+        if (!deleted) {
+            return NextResponse.json({
+                success: false,
+                message: "Product not found"
+            }, { status: 404 });
+        }
+        return NextResponse.json({
+            success: true,
+            message: "Product deleted successfully",
+            data: deleted
+        });
+    } catch (error) {
+        console.error("Error deleting product:", error);
+        return NextResponse.json({
+            success: false,
             message: "Internal server error"
         }, { status: 500 });
     }
