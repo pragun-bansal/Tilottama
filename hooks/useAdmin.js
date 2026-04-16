@@ -717,7 +717,11 @@ export const useAdminProducts = () => {
     // Group products by category
     const groupedProducts = useMemo(() => {
         return productsData.products.reduce((acc, product) => {
-            product.category?.forEach(cat => {
+            const categories = product.category && product.category.length > 0 
+                ? product.category 
+                : ['Uncategorized'];
+                
+            categories.forEach(cat => {
                 if (!acc[cat]) {
                     acc[cat] = [];
                 }
