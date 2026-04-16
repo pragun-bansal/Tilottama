@@ -131,7 +131,7 @@ Total: ₹${total.toLocaleString()}
 ${offer}
 `;
 
-        const phone = "919811144328";
+        const phone = process.env.NEXT_PUBLIC_PHONE;
         const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
         window.open(url, "_blank");
     };
