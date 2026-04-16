@@ -123,27 +123,6 @@ import connectMongoDB from '../../../../lib/config/db';
 import Product from '../../../../lib/models/Product';
 import { uploadImageToCloudinary } from '@/lib/utils/cloudinaryUpload';
 
-import formidable from 'formidable';
-import { Readable } from 'stream';
-
-export const runtime = "nodejs";
-
-// 🔁 Convert Web Request → Node Stream
-function convertWebRequestToNodeRequest(req) {
-    const reader = req.body.getReader();
-
-    return new Readable({
-        async read() {
-            const { done, value } = await reader.read();
-            if (done) {
-                this.push(null);
-            } else {
-                this.push(Buffer.from(value));
-            }
-        }
-    });
-}
-
 export async function GET(request, { params }) {
     try {
         await connectMongoDB();
@@ -180,87 +159,65 @@ export async function PUT(request, { params }) {
     try {
         await connectMongoDB();
 
-        const { productId } = params;
+        const { productId } = await params;
+        const formData = await request.formData();
+        const images = formData.getAll('all_images');
 
-        const nodeReq = convertWebRequestToNodeRequest(request);
+        const product = await Product.findById(productId);
+        if (!product) {
+            return NextResponse.json({
+                message: "Product not found"
+            }, { status: 404 });
+        }
 
-        const form = formidable({
-            multiples: true,
-            maxFileSize: 50 * 1024 * 1024, // 50MB
-        });
+        // Update fields
+        product.name = formData.get('name');
+        product.category = JSON.parse(formData.get('category') || '[]').map(cat => cat.toLowerCase());
+        product.tagline = formData.get('tagline');
+        product.description = formData.get('description');
+        product.price = Number(formData.get('price'));
+        product.stock = Number(formData.get('stock'));
+        product.sizes = JSON.parse(formData.get('sizes') || '[]');
+        product.colors = JSON.parse(formData.get('colors') || '[]');
 
-        return new Promise((resolve) => {
-            form.parse(nodeReq, async (err, fields, files) => {
-                if (err) {
-                    console.error(err);
-                    return resolve(
-                        NextResponse.json({ error: "File upload failed" }, { status: 500 })
-                    );
-                }
+        // Handle existing images (URLs that were kept during edit)
+        const existingImagesRaw = formData.get('existingImages');
+        let existingImageUrls = [];
+        if (existingImagesRaw) {
+            try {
+                const parsed = JSON.parse(existingImagesRaw);
+                existingImageUrls = parsed.map(item => item.image);
+            } catch (e) {
+                console.error('Error parsing existingImages:', e);
+            }
+        }
 
-                try {
-                    const product = await Product.findById(productId);
+        // Handle new image uploads
+        let newImageUrls = [];
+        if (images && images.length > 0) {
+            newImageUrls = await Promise.all(
+                images.map(async (image, index) => {
+                    const bytes = await image.arrayBuffer();
+                    const buffer = Buffer.from(bytes);
 
-                    if (!product) {
-                        return resolve(
-                            NextResponse.json({ message: "Product not found" }, { status: 404 })
-                        );
-                    }
+                    const folder = `products/${product._id}`;
+                    const publicId = `image_${Date.now()}_${index}`;
+                    return uploadImageToCloudinary(buffer, folder, publicId);
+                })
+            );
+            newImageUrls = newImageUrls.map(result => result.secure_url);
+        }
 
-                    // -------- Fields --------
-                    product.name = fields.name?.[0];
-                    product.tagline = fields.tagline?.[0];
-                    product.description = fields.description?.[0];
-                    product.price = Number(fields.price?.[0]);
-                    product.stock = Number(fields.stock?.[0]);
+        // Combine existing + new images
+        product.all_images = [...existingImageUrls, ...newImageUrls];
 
-                    product.category = JSON.parse(fields.category?.[0] || '[]')
-                        .map(cat => cat.toLowerCase());
-
-                    product.sizes = JSON.parse(fields.sizes?.[0] || '[]');
-                    product.colors = JSON.parse(fields.colors?.[0] || '[]');
-
-                    // -------- Images --------
-                    let images = files.all_images;
-
-                    if (images) {
-                        if (!Array.isArray(images)) {
-                            images = [images];
-                        }
-
-                        const newImageUrls = await Promise.all(
-                            images.map(async (file, index) => {
-                                const fs = await import('fs');
-                                const buffer = fs.readFileSync(file.filepath);
-
-                                const folder = `products/${product._id}`;
-                                const publicId = `image_${Date.now()}_${index}`;
-
-                                return uploadImageToCloudinary(buffer, folder, publicId);
-                            })
-                        );
-
-                        product.all_images = newImageUrls.map(img => img.secure_url);
-                    }
-
-                    await product.save();
-
-                    return resolve(
-                        NextResponse.json({ success: true, data: product })
-                    );
-
-                } catch (error) {
-                    console.error(error);
-                    return resolve(
-                        NextResponse.json({ error: "Internal server error" }, { status: 500 })
-                    );
-                }
-            });
-        });
-
+        await product.save();
+        return NextResponse.json({ success: true, data: product });
     } catch (error) {
-        console.error(error);
-        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+        console.error("Error editing product:", error);
+        return NextResponse.json({
+            message: "Internal server error"
+        }, { status: 500 });
     }
 }
 

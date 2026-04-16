@@ -194,7 +194,9 @@ const nextConfig = {
 
     // Experimental features
     experimental: {
-        // memoryBasedWorkers removed as it's deprecated
+        serverActions: {
+            bodySizeLimit: '50mb',
+        },
     },
 
     // Webpack configuration (removed for Turbopack compatibility)

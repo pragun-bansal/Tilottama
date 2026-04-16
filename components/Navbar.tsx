@@ -1096,7 +1096,7 @@ export const Navbar: React.FC<NavbarProps> = ({ show, setShow }) => {
                                     onMouseOut={() => setDroppeddown2(false)}
                                     className={`${
                                         dropdown2 || droppeddown2
-                                            ? 'hidden md:absolute translate-x-[-10px] translate-y-[-10px]  z-10 font-normal divide-y bg-white divide-gray-100 shadow-md w-44'
+                                            ? 'absolute translate-x-[-10px] translate-y-[-10px]  z-10 font-normal divide-y bg-white divide-gray-100 shadow-md w-44'
                                             : 'hidden'
                                     }`}
                                 >

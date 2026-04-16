@@ -61,12 +61,13 @@ const ProfilePage = () => {
     //     isAuthenticated: state.user.isAuthenticated,
     //     token: state.user.token
     // }));
-    const { data: user, isLoading, error, isAuthenticated, token } = useSelector((state: { user: { data: UserType | Record<string, never>, isLoading: boolean, error: string | null, isAuthenticated: boolean, token: string | null } }) => ({
+    const { data: user, isLoading, error, isAuthenticated, token, isInitialized } = useSelector((state: { user: { data: UserType | Record<string, never>, isLoading: boolean, error: string | null, isAuthenticated: boolean, token: string | null, isInitialized: boolean } }) => ({
         data: state.user.data,
         isLoading: state.user.isLoading,
         error: state.user.error,
         isAuthenticated: state.user.isAuthenticated,
-        token: state.user.token
+        token: state.user.token,
+        isInitialized: state.user.isInitialized
     }));
 
     // Local state
@@ -112,18 +113,18 @@ const ProfilePage = () => {
 
     // Check for authentication
     useEffect(() => {
-        if (!isAuthenticated && !token) {
+        if (isInitialized && !isAuthenticated && !token) {
             router.push('/login');
             return;
         }
 
         // Fetch fresh user data if needed
-        if (isAuthenticated && token && (!user || Object.keys(user).length === 0)) {
+        if (isInitialized && isAuthenticated && token && (!user || Object.keys(user).length === 0)) {
             // dispatch(fetchUserData(token));
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             dispatch(fetchUserData(token) as any);
         }
-    }, [isAuthenticated, token, user, dispatch, router]);
+    }, [isInitialized, isAuthenticated, token, user, dispatch, router]);
 
     // Handle form input changes
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -246,11 +247,13 @@ const ProfilePage = () => {
         };
     }, [dispatch]);
 
-    if (!isAuthenticated) {
+    if (!isInitialized || (!isAuthenticated && isInitialized)) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin" />
-                <span className="ml-2">Redirecting to login...</span>
+                <span className="ml-2">
+                    {!isInitialized ? 'Loading profile...' : 'Redirecting to login...'}
+                </span>
             </div>
         );
     }

@@ -628,10 +628,69 @@ const EditProduct = ({ isEdit = false, productId = null }) => {
         });
     };
 
-    const handleImageChange = (newFiles) => {
+    // Compress image client-side before upload to avoid size limit issues
+    const compressImage = (file, maxWidth = 1920, quality = 0.8) => {
+        return new Promise((resolve) => {
+            // If it's already small enough (under 1MB), skip compression
+            if (file.size < 1 * 1024 * 1024) {
+                return resolve(file);
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let { width, height } = img;
+
+                    // Only resize if wider than maxWidth
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob(
+                        (blob) => {
+                            if (blob) {
+                                const compressedFile = new File(
+                                    [blob],
+                                    file.name.replace(/\.[^.]+$/, '.jpg'),
+                                    { type: 'image/jpeg', lastModified: Date.now() }
+                                );
+                                console.log(
+                                    `Compressed ${file.name}: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`
+                                );
+                                resolve(compressedFile);
+                            } else {
+                                // Fallback to original if compression fails
+                                resolve(file);
+                            }
+                        },
+                        'image/jpeg',
+                        quality
+                    );
+                };
+                img.onerror = () => resolve(file); // Fallback to original on error
+                img.src = e.target.result;
+            };
+            reader.onerror = () => resolve(file); // Fallback to original on error
+            reader.readAsDataURL(file);
+        });
+    };
+
+    const handleImageChange = async (newFiles) => {
+        // Compress all new images before adding to state
+        const compressedFiles = await Promise.all(
+            newFiles.map((file) => compressImage(file))
+        );
         setProduct((prevProduct) => ({
             ...prevProduct,
-            all_images: [...prevProduct.all_images, ...newFiles],
+            all_images: [...prevProduct.all_images, ...compressedFiles],
         }));
     };
 
